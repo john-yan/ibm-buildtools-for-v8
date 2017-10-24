@@ -12,7 +12,7 @@ cd /workdir && \
 generate_and_build() {
   OUT=$1
   cd /workdir/src  && \
-      $GN gen $OUT --args='enable_nacl=false use_allocator="none" is_component_build=false' && \
+      $GN gen $OUT --args='enable_nacl=false use_allocator="none" is_component_build=false is_debug=false' && \
       ninja -C $OUT gn gn_unittests
 }
 

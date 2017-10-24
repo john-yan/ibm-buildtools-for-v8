@@ -1,12 +1,22 @@
 
+GN_VERSION=`buildtools/gn --version`
+
+all: build-and-upload-gn
+
 build-images:
 	docker build -t buildtools .
 
 build-and-update-gn: build-images
 	docker run --rm -v $(PWD)/buildtools:/buildtools buildtools bash -x /srcdir/script.sh
 
-run: build-images
-	docker run --rm -it -v $(PWD)/buildtools:/buildtools -v /sandbox/johnyan/buildtools/src:/src buildtools bash || true
+upload-gn:
+	git ci buildtools/gn -m "GN: Update to $(GN_VERSION)"
 
-.PHONY: build-images build-and-update-gn run
+build-and-upload-gn: build-and-update-gn
+	git ci buildtools/gn -m "GN: Update to $(GN_VERSION)"
+
+run: build-images
+	docker run --rm -it -v $(PWD)/buildtools:/buildtools buildtools bash || true
+
+.PHONY: build-images build-and-update-gn upload-gn build-and-upload-gn run
 

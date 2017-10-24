@@ -21,6 +21,5 @@ ENV PATH=$PATH:/depot_tools
 
 WORKDIR /workdir
 
-COPY ./src.diff /srcdir/src.diff
-COPY script.sh /srcdir/script.sh
+COPY ./src/* /srcdir/
 

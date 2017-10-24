@@ -16,3 +16,11 @@ RUN apt-get update && \
                        libatk1.0-dev \
                        libgtk-3-dev
 
+RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git /depot_tools
+ENV PATH=$PATH:/depot_tools
+
+WORKDIR /workdir
+
+COPY ./src.diff /srcdir/src.diff
+COPY script.sh /srcdir/script.sh
+

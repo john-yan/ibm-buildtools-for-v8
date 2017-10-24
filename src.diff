@@ -1,0 +1,73 @@
+diff --git a/base/allocator/partition_allocator/spin_lock.cc b/base/allocator/partition_allocator/spin_lock.cc
+index d16778d..593b3b2 100644
+--- a/base/allocator/partition_allocator/spin_lock.cc
++++ b/base/allocator/partition_allocator/spin_lock.cc
+@@ -37,6 +37,9 @@
+ // Don't bother doing using .word here since r2 is the lowest supported mips64
+ // that Chromium supports.
+ #define YIELD_PROCESSOR __asm__ __volatile__("pause")
++#elif defined(ARCH_CPU_S390_FAMILY)
++// just insert a nop
++#define YIELD_PROCESSOR __asm__ __volatile__(".long 0xB9040000")
+ #endif
+ #endif
+ 
+diff --git a/base/process/launch_posix.cc b/base/process/launch_posix.cc
+index 9c76989..04c1539 100644
+--- a/base/process/launch_posix.cc
++++ b/base/process/launch_posix.cc
+@@ -721,7 +721,7 @@ NOINLINE pid_t CloneAndLongjmpInChild(unsigned long flags,
+   // fork-like behavior.
+   alignas(16) char stack_buf[PTHREAD_STACK_MIN];
+ #if defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARM_FAMILY) || \
+-    defined(ARCH_CPU_MIPS_FAMILY)
++    defined(ARCH_CPU_MIPS_FAMILY) || defined(ARCH_CPU_S390_FAMILY)
+   // The stack grows downward.
+   void* stack = stack_buf + sizeof(stack_buf);
+ #else
+@@ -755,7 +755,7 @@ pid_t ForkWithFlags(unsigned long flags, pid_t* ptid, pid_t* ctid) {
+ #if defined(ARCH_CPU_X86_64)
+     return syscall(__NR_clone, flags, nullptr, ptid, ctid, nullptr);
+ #elif defined(ARCH_CPU_X86) || defined(ARCH_CPU_ARM_FAMILY) || \
+-    defined(ARCH_CPU_MIPS_FAMILY)
++    defined(ARCH_CPU_MIPS_FAMILY) || defined(ARCH_CPU_S390_FAMILY)
+     // CONFIG_CLONE_BACKWARDS defined.
+     return syscall(__NR_clone, flags, nullptr, ptid, nullptr, ctid);
+ #else
+diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
+index a3227d5..270199d 100644
+--- a/build/config/compiler/BUILD.gn
++++ b/build/config/compiler/BUILD.gn
+@@ -1210,6 +1210,7 @@ config("default_warnings") {
+       # Don't warn about "maybe" uninitialized. Clang doesn't include this
+       # in -Wall but gcc does, and it gives false positives.
+       cflags += [ "-Wno-maybe-uninitialized" ]
++      cflags += [ "-Wno-deprecated-declarations" ]
+     }
+   }
+ 
+diff --git a/skia/BUILD.gn b/skia/BUILD.gn
+index 5910926..068253a 100644
+--- a/skia/BUILD.gn
++++ b/skia/BUILD.gn
+@@ -696,6 +696,10 @@ source_set("skia_opts") {
+   } else if (current_cpu == "mips64el") {
+     cflags += [ "-fomit-frame-pointer" ]
+     sources = skia_opts.none_sources
++  } else if (current_cpu == "ppc64") {
++    sources = skia_opts.none_sources
++  } else if (current_cpu == "s390x") {
++    sources = skia_opts.none_sources
+   } else {
+     assert(false, "Need to port cpu specific stuff from skia_library_opts.gyp")
+   }
+diff --git a/tools/gn/substitution_writer.cc b/tools/gn/substitution_writer.cc
+index 50b1e2d..3b8457e2 100644
+--- a/tools/gn/substitution_writer.cc
++++ b/tools/gn/substitution_writer.cc
+@@ -607,4 +607,5 @@ std::string SubstitutionWriter::GetLinkerSubstitution(
+       NOTREACHED();
+       return std::string();
+   }
++  return result;
+ }

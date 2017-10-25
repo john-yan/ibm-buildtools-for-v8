@@ -10,10 +10,10 @@ build-and-update-gn: build-images
 	docker run --rm -v "$(PWD)/buildtools-$(ARCH):/buildtools" buildtools bash -x /srcdir/script.sh
 
 upload-gn:
-	git ci buildtools-$(ARCH)/gn -m "GN: Update $(ARCH) gn to $(shell buildtools-$(ARCH)/gn --version)"
+	git commit buildtools-$(ARCH)/gn -m "GN: Update $(ARCH) gn to $(shell buildtools-$(ARCH)/gn --version)"
 
 build-and-upload-gn: build-and-update-gn
-	git ci buildtools-$(ARCH)/gn -m "GN: Update $(ARCH) gn to $(shell buildtools-$(ARCH)/gn --version)"
+	git commit buildtools-$(ARCH)/gn -m "GN: Update $(ARCH) gn to $(shell buildtools-$(ARCH)/gn --version)"
 
 run: build-images
 	docker run --rm -it -v "$(PWD)/buildtools-$(ARCH):/buildtools" buildtools bash || true

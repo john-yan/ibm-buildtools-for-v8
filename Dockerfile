@@ -14,7 +14,9 @@ RUN apt-get update && \
                        libgconf2-dev \
                        libgnome-keyring-dev \
                        libatk1.0-dev \
-                       libgtk-3-dev
+                       libgtk-3-dev \
+                       $(apt-cache search gcc-multilib | awk '{print $1}') \
+                       $(apt-cache search g++-multilib | awk '{print $1}')
 
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git /depot_tools
 ENV PATH=$PATH:/depot_tools

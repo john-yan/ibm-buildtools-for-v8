@@ -1,0 +1,4 @@
+#!/bin/bash
+
+exec $(dirname $0)/buildtools-$(uname -m)/ninja $@
+

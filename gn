@@ -1,0 +1,5 @@
+#!/bin/bash
+
+git -C $(dirname $0) pull
+exec $(dirname $0)/buildtools-$(uname -m)/gn $@
+
